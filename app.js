@@ -4,13 +4,15 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose');
+var compression = require('compression');
+var helmet = require('helmet');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var catalogRouter = require('./routes/catalog');
 
 var app = express();
 //Set up default mongoose connection
-var mongoDB = 'mongodb://admin:admin@ds119969.mlab.com:19969/local_library';
+var mongoDB = process.env.MONGO_URI||'mongodb://admin:admin@ds119969.mlab.com:19969/local_library';
 mongoose.connect(mongoDB);
 // Get Mongoose to use the global promise library
 mongoose.Promise = global.Promise;
@@ -27,7 +29,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
+app.use(compression());//Compress all routes // For high traffic website usually Nginx is used
+app.use(helmet());//Sets appropriate http headers to protect from some wellknown web vulnerabilities
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/catalog',catalogRouter);
